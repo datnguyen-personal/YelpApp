@@ -23,7 +23,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     var searchResults: [Business]!
     
-    
+    var filters: [Filter]?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,7 +36,6 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         restaurantTableView.estimatedRowHeight = 100
         restaurantTableView.rowHeight = UITableViewAutomaticDimension
         
-        
         setupView()
 
 //        Business.searchWithTerm("Thai", completion: { (businesses: [Business]!, error: NSError!) -> Void in
@@ -48,7 +47,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
 //            }
 //        })
         
-        Business.searchWithTerm("Thai") { (businesses:[Business]!, error:NSError!) -> Void in
+        Business.searchWithTerm("") { (businesses:[Business]!, error:NSError!) -> Void in
             self.businesses = businesses
             //print(businesses.count)
             self.restaurantTableView.reloadData()
@@ -112,12 +111,17 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func searchBarSearchButtonClicked(searchBar: UISearchBar) {
-        Business.searchWithTerm(searchBar.text!) { (businesses:[Business]!, error:NSError!) -> Void in
-            self.businesses = businesses
-            //print(businesses.count)
-            self.restaurantTableView.reloadData()
-            //searchBar.endEditing(true)
+        if filters?.count > 0 {
+            doSearch(filters!)
+        } else {
+            Business.searchWithTerm(searchBar.text!) { (businesses:[Business]!, error:NSError!) -> Void in
+                self.businesses = businesses
+                //print(businesses.count)
+                self.restaurantTableView.reloadData()
+                searchBar.endEditing(true)
+            }
         }
+        
     }
     
     // MARK: - Navigation
@@ -152,7 +156,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     func filterViewController(filtersViewController: FilterViewController, didUpdateFilters filters: [Filter]) {
-        
+        self.filters = filters
         doSearch(filters)
     }
 
@@ -160,6 +164,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         Business.searchWithTerm(restaurantSearchBar.text!, sort: filters[2].filterValues[filters[2].currentIndex].value, categories: [filters[3].filterValues[filters[3].currentIndex].value], deals: filters[0].filterValues[filters[0].currentIndex].value) { (businesses:[Business]!, error: NSError!) -> Void in
             self.businesses = businesses
             self.restaurantTableView.reloadData()
+            self.restaurantSearchBar.endEditing(true)
         }
     }
 }
